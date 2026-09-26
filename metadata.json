@@ -1,0 +1,6 @@
+{
+  "name": "AI FraudShield",
+  "description": "AI Fraud Detection, Model Security & Failure Detection System with multi-modal threat scanning, reliability scoring, drift telemetry, and defensive robustness testing.",
+  "capabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"],
+  "permissions": []
+}
