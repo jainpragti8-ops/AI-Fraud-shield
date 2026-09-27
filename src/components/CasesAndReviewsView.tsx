@@ -13,6 +13,7 @@ import {
   X,
 } from 'lucide-react';
 import { Case, Role } from '../types';
+import { handleClientApiRequest } from '../services/clientApi';
 
 interface CasesAndReviewsViewProps {
   currentRole: Role;
@@ -24,9 +25,9 @@ export const CasesAndReviewsView: React.FC<CasesAndReviewsViewProps> = ({
   onReviewSubmitted,
 }) => {
   const [subTab, setSubTab] = useState<'queue' | 'all'>('queue');
-  const [cases, setCases] = useState<Case[]>([]);
-  const [queueItems, setQueueItems] = useState<any[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [cases, setCases] = useState<Case[]>(() => handleClientApiRequest('/api/v1/cases') || []);
+  const [queueItems, setQueueItems] = useState<any[]>(() => handleClientApiRequest('/api/v1/reviews/queue') || []);
+  const [loading, setLoading] = useState<boolean>(false);
   const [selectedCase, setSelectedCase] = useState<Case | null>(null);
 
   // Review form modal
@@ -49,13 +50,23 @@ export const CasesAndReviewsView: React.FC<CasesAndReviewsViewProps> = ({
       if (casesRes.ok) {
         const cData = await casesRes.json();
         setCases(cData);
+      } else {
+        const fbCases = handleClientApiRequest('/api/v1/cases');
+        if (fbCases) setCases(fbCases);
       }
       if (queueRes.ok) {
         const qData = await queueRes.json();
         setQueueItems(qData);
+      } else {
+        const fbQueue = handleClientApiRequest('/api/v1/reviews/queue');
+        if (fbQueue) setQueueItems(fbQueue);
       }
     } catch (err) {
-      console.error('Failed to load cases data', err);
+      console.warn('Failed to load cases data via network, falling back', err);
+      const fbCases = handleClientApiRequest('/api/v1/cases');
+      if (fbCases) setCases(fbCases);
+      const fbQueue = handleClientApiRequest('/api/v1/reviews/queue');
+      if (fbQueue) setQueueItems(fbQueue);
     } finally {
       setLoading(false);
     }

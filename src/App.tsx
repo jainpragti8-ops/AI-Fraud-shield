@@ -8,11 +8,12 @@ import { RobustnessScannerView } from './components/RobustnessScannerView';
 import { AlertsAndAuditView } from './components/AlertsAndAuditView';
 import { ConfigView } from './components/ConfigView';
 import { Role, Case } from './types';
+import { handleClientApiRequest } from './services/clientApi';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [currentRole, setCurrentRole] = useState<Role>('admin');
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<any>(() => handleClientApiRequest('/api/v1/dashboard/stats'));
 
   const fetchStats = async () => {
     try {
@@ -20,10 +21,13 @@ export default function App() {
       if (res.ok) {
         const data = await res.json();
         setStats(data);
+        return;
       }
     } catch (e) {
-      console.error('Failed to load stats', e);
+      console.warn('Network stats fetch error, falling back to local store', e);
     }
+    const fallback = handleClientApiRequest('/api/v1/dashboard/stats');
+    if (fallback) setStats(fallback);
   };
 
   useEffect(() => {

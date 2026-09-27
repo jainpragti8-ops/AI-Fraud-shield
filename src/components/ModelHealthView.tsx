@@ -12,10 +12,11 @@ import {
   Info,
 } from 'lucide-react';
 import { ModelHealthSnapshot } from '../types';
+import { handleClientApiRequest } from '../services/clientApi';
 
 export const ModelHealthView: React.FC = () => {
-  const [snapshot, setSnapshot] = useState<ModelHealthSnapshot | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [snapshot, setSnapshot] = useState<ModelHealthSnapshot | null>(() => handleClientApiRequest('/api/v1/model-health'));
+  const [loading, setLoading] = useState<boolean>(false);
   const [actionLoading, setActionLoading] = useState<boolean>(false);
   const [bannerMsg, setBannerMsg] = useState<string | null>(null);
 
@@ -26,12 +27,15 @@ export const ModelHealthView: React.FC = () => {
       if (res.ok) {
         const data = await res.json();
         setSnapshot(data);
+        return;
       }
     } catch (e) {
-      console.error('Failed to fetch health telemetry', e);
+      console.warn('Failed to fetch health telemetry via network', e);
     } finally {
       setLoading(false);
     }
+    const fallback = handleClientApiRequest('/api/v1/model-health');
+    if (fallback) setSnapshot(fallback);
   };
 
   useEffect(() => {
